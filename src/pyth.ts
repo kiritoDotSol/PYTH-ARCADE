@@ -14,7 +14,7 @@ export const PYTH_ASSETS = [
     basePrice: 65000
   },
   {
-    id: '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+    id: 'ff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
     symbol: 'ETH',
     name: 'ETHEREUM',
     color: '#627EEA',
