@@ -1,0 +1,5 @@
+{
+  "name": "Pyth Arcade",
+  "description": "A retro-futuristic arcade machine interface powered by Pyth Network real-time data. Slice bullish assets, test your memory, and predict the next candle.",
+  "requestFramePermissions": []
+}
