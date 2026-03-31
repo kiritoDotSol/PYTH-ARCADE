@@ -3,58 +3,30 @@ import { useGameStore } from '../store';
 import { usePythPrices } from '../hooks/usePythPrices';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { socketService } from '../lib/socket';
-import { Gamepad2, BarChart3, Trophy, TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 // New Modular Components
 import { HeaderBar } from './game/HeaderBar';
-import { InfoPanel } from './game/InfoPanel';
 import { ControlPanel } from './game/ControlPanel';
-import { LeaderboardPanel } from './game/LeaderboardPanel';
 import { ResolvingOverlay } from './game/ResolvingOverlay';
 import { GameOverOverlay } from './game/GameOverOverlay';
-import { MultiplayerOverlay } from './game/MultiplayerOverlay';
 import { GameViewport } from './GameViewport';
 import { GameInstructions } from './GameInstructions';
-
-type MobileView = 'GAME' | 'STATS' | 'RANK';
 
 export const GameUI: React.FC = () => {
   const prices = usePythPrices();
   const { 
-    score, timeLeft, status, gameMode, highScore, xp, 
-    predictions, setRoomId, setStatus, setTimeLeft, 
+    score, timeLeft, status, gameMode, highScore, 
+    predictions, setStatus, setTimeLeft, 
     addXP, addScoreToHistory, setScore, setCombo, 
     setMaxCombo, setHighScore 
   } = useGameStore();
 
-  const [availableRooms, setAvailableRooms] = useState<{ id: string, playerCount: number }[]>([]);
-  const [showMultiplayer, setShowMultiplayer] = useState(false);
   const [resolvingIndex, setResolvingIndex] = useState(-1);
   const [tempScore, setTempScore] = useState(0);
   const [tempCombo, setTempCombo] = useState(0);
   const [tempMaxCombo, setTempMaxCombo] = useState(0);
-  const [mobileView, setMobileView] = useState<MobileView>('GAME');
   const [showInstructions, setShowInstructions] = useState(true);
-
-  // Socket Connection & Room Management
-  useEffect(() => {
-    const socket = socketService.connect();
-    socket.emit("get-rooms");
-    
-    socket.on("rooms-list", (rooms) => setAvailableRooms(rooms));
-    socket.on("room-joined", (id) => {
-      setRoomId(id);
-      setShowMultiplayer(false);
-    });
-    socket.on("error", (msg) => alert(msg));
-
-    return () => {
-      socket.off("rooms-list");
-      socket.off("room-joined");
-      socket.off("error");
-    };
-  }, [setRoomId]);
 
   // Game Timer Logic
   useEffect(() => {
@@ -146,11 +118,9 @@ export const GameUI: React.FC = () => {
 
   return (
     <div className="absolute inset-0 pointer-events-none flex flex-col select-none overflow-hidden">
-      {/* 1. Header Bar */}
       <HeaderBar />
 
-      {/* Ticker Tape (Decorative) */}
-      <div className="bg-brand-purple/5 border-b border-white/10 h-6 overflow-hidden flex items-center shrink-0">
+      <div className="bg-brand-purple/5 border-b border-border h-6 overflow-hidden flex items-center shrink-0">
         <motion.div 
           animate={{ x: [0, -1000] }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -162,108 +132,46 @@ export const GameUI: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* 2. Main Layout Grid */}
       <div className="flex-1 relative overflow-hidden pointer-events-auto">
-        <div className="max-w-7xl mx-auto px-4 py-4 md:py-8 h-full flex flex-col">
-          <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-6 flex-1 min-h-0">
-            
-            {/* Left Column: Info Panel (Desktop/Tablet) */}
-            <div className={`
-              ${mobileView === 'STATS' ? 'block' : 'hidden'} 
-              lg:block lg:col-span-3 h-full overflow-y-auto custom-scrollbar
-            `}>
-              <InfoPanel />
-            </div>
+        <div className="max-w-3xl mx-auto px-4 py-4 md:py-8 h-full flex flex-col">
+          <AnimatePresence mode="wait">
+            {status === 'START' && (
+              <motion.div
+                key="start-panel"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.05 }}
+                className="flex flex-col gap-6 my-auto mx-auto w-full"
+              >
+                <ControlPanel />
+              </motion.div>
+            )}
 
-            {/* Center Column: Main Game Area */}
-            <div className={`
-              ${mobileView === 'GAME' ? 'flex' : 'hidden lg:flex'} 
-              col-span-1 md:col-span-8 lg:col-span-6 flex-col gap-6 h-full overflow-y-auto custom-scrollbar
-            `}>
-              <AnimatePresence mode="wait">
-                {status === 'START' && (
-                  <motion.div
-                    key="start-panel"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.05 }}
-                    className="flex flex-col gap-6"
-                  >
-                    {/* Hero Section */}
-                    <div className="bg-ink/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-10 relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-full h-full bg-brand-purple/5 pointer-events-none" />
-                      <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                        <div className="w-8 h-1 bg-brand-lime" />
-                        <span className="text-[10px] font-mono text-brand-lime uppercase tracking-[0.3em]">System v2.5</span>
-                      </div>
-                      <h1 className="text-4xl sm:text-6xl font-black text-white leading-[0.85] tracking-tighter mb-4 sm:mb-6 italic uppercase">
-                        PLICE<br />
-                        <span className="text-brand-purple">IT</span>
-                      </h1>
-                      <p className="text-white/60 text-xs sm:text-sm leading-relaxed max-w-md">
-                        Master the markets with Pyth Network. Slice bullish assets up and bearish assets down in high-frequency trading simulation.
-                      </p>
-                    </div>
+            {status === 'RESOLVING' && (
+              <div className="flex items-center justify-center h-full">
+                <ResolvingOverlay 
+                  resolvingIndex={resolvingIndex} 
+                  tempScore={tempScore} 
+                  tempCombo={tempCombo} 
+                />
+              </div>
+            )}
 
-                    {/* Control Panel */}
-                    <ControlPanel />
-                  </motion.div>
-                )}
+            {status === 'GAMEOVER' && (
+              <div className="flex justify-center h-full overflow-y-auto custom-scrollbar py-4">
+                <div className="my-auto w-full">
+                  <GameOverOverlay />
+                </div>
+              </div>
+            )}
 
-                {status === 'RESOLVING' && (
-                  <div className="flex items-center justify-center h-full">
-                    <ResolvingOverlay 
-                      resolvingIndex={resolvingIndex} 
-                      tempScore={tempScore} 
-                      tempCombo={tempCombo} 
-                    />
-                  </div>
-                )}
-
-                {status === 'GAMEOVER' && (
-                  <div className="flex items-center justify-center h-full">
-                    <GameOverOverlay />
-                  </div>
-                )}
-
-                {status === 'PLAYING' && (
-                  <GameViewport />
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Right Column: Leaderboard Panel */}
-            <div className={`
-              ${mobileView === 'RANK' ? 'block' : 'hidden'} 
-              md:block md:col-span-4 lg:col-span-3 h-full overflow-y-auto custom-scrollbar
-            `}>
-              <LeaderboardPanel />
-            </div>
-          </div>
+            {status === 'PLAYING' && (
+              <GameViewport />
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Mobile Navigation Bar */}
-      <div className="lg:hidden bg-ink/90 backdrop-blur-xl border-t border-white/10 px-6 py-3 flex justify-between items-center pointer-events-auto shrink-0">
-        {[
-          { id: 'STATS', icon: BarChart3, label: 'Stats' },
-          { id: 'GAME', icon: Gamepad2, label: 'Game' },
-          { id: 'RANK', icon: Trophy, label: 'Rank' }
-        ].map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setMobileView(item.id as MobileView)}
-            className={`flex flex-col items-center gap-1 transition-all ${
-              mobileView === item.id ? 'text-brand-lime' : 'text-white/40'
-            }`}
-          >
-            <item.icon size={20} className={mobileView === item.id ? 'animate-pulse' : ''} />
-            <span className="text-[9px] font-mono uppercase tracking-widest">{item.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Footer Hints (Desktop Only) */}
       <div className="hidden lg:flex absolute bottom-8 left-0 right-0 justify-center items-center gap-12 pointer-events-none">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 px-4 py-2 bg-brand-lime/10 border border-brand-lime/20 rounded-full">
@@ -277,16 +185,6 @@ export const GameUI: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Multiplayer Overlay */}
-      <AnimatePresence>
-        {showMultiplayer && (
-          <MultiplayerOverlay 
-            onClose={() => setShowMultiplayer(false)} 
-            availableRooms={availableRooms} 
-          />
-        )}
-      </AnimatePresence>
 
       <GameInstructions
         isOpen={showInstructions && status === 'START'}

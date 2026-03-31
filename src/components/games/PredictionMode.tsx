@@ -12,7 +12,7 @@ export const PredictionMode: React.FC = () => {
         </div>
         <div className="flex flex-col items-end">
           <span className="text-[10px] font-mono text-brand-purple uppercase">STAKE</span>
-          <span className="text-2xl font-mono text-white">100 XP</span>
+          <span className="text-2xl font-mono text-foreground">100 XP</span>
         </div>
       </div>
 
@@ -25,7 +25,7 @@ export const PredictionMode: React.FC = () => {
         className="relative w-64 h-64 bg-brand-lime/10 rounded-3xl border-4 border-brand-lime flex flex-col items-center justify-center gap-6 shadow-[0_0_50px_rgba(190,242,100,0.2)]"
       >
         <TrendingUp className="w-32 h-32 text-brand-lime" />
-        <span className="text-xl font-black italic text-white uppercase tracking-widest">INITIALIZING...</span>
+        <span className="text-xl font-black italic text-foreground uppercase tracking-widest">INITIALIZING...</span>
       </motion.div>
 
       <div className="flex gap-8">
@@ -37,7 +37,7 @@ export const PredictionMode: React.FC = () => {
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-mono text-white/20 uppercase tracking-widest text-center">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-mono text-foreground/20 uppercase tracking-widest text-center">
         Predict the next candle using real-time Pyth data • High stakes, high rewards
       </div>
     </div>

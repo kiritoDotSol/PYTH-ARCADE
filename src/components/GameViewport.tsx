@@ -26,18 +26,31 @@ export const GameViewport: React.FC = () => {
   return (
     <div 
       ref={containerRef}
-      className="relative flex-1 w-full h-full min-h-[400px] bg-ink/20 rounded-3xl overflow-hidden border border-white/5 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] group"
+      className="relative flex-1 w-full h-full min-h-[400px] rounded-3xl overflow-hidden border border-border group shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_60px_rgba(163,255,0,0.05)] transition-all duration-500"
     >
-      {/* Playable Area Boundary Glow */}
-      <div className="absolute inset-0 border-2 border-brand-purple/10 rounded-3xl pointer-events-none group-hover:border-brand-purple/20 transition-colors duration-500" />
-      <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(124,58,237,0.05)] pointer-events-none" />
+      {/* Radial Gradient Background: Dark focus center, brighter vignette focus zone */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--color-card)_0%,var(--color-background)_100%)] pointer-events-none z-0" />
+      
+      {/* Subtle Glowing Container Edges */}
+      <div className="absolute inset-0 border-[3px] border-primary/20 rounded-3xl pointer-events-none group-hover:border-primary/40 transition-colors duration-500 z-10" />
+      <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(163,255,0,0.05)] group-hover:shadow-[inset_0_0_150px_rgba(163,255,0,0.1)] pointer-events-none transition-shadow duration-700 z-10" />
 
-      {dimensions.width > 0 && dimensions.height > 0 && (
-        <GameCanvas width={dimensions.width} height={dimensions.height} />
-      )}
+      {/* Animated Vertical Grid Overlay */}
+      <motion.div 
+        animate={{ y: [0, 40] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        className="absolute -top-10 bottom-0 left-0 right-0 pointer-events-none z-10 opacity-40 dark:opacity-20 mix-blend-multiply dark:mix-blend-screen"
+        style={{
+          backgroundImage: `linear-gradient(to right, var(--color-muted) 1px, transparent 1px), linear-gradient(to bottom, var(--color-muted) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+        }}
+      />
 
-      {/* Grid Pattern Overlay for the viewport */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      <div className="relative z-20 w-full h-full">
+        {dimensions.width > 0 && dimensions.height > 0 && (
+          <GameCanvas width={dimensions.width} height={dimensions.height} />
+        )}
+      </div>
     </div>
   );
 };

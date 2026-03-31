@@ -258,12 +258,12 @@ export const PythRace: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto bg-ink/90 border border-white/10 rounded-xl overflow-hidden shadow-2xl flex flex-col h-[80vh]">
+    <div className="w-full max-w-5xl mx-auto bg-background/90 border border-border rounded-xl overflow-hidden shadow-2xl flex flex-col h-[80vh]">
       {/* Header */}
-      <div className="p-4 sm:p-6 border-b border-white/10 bg-black/50 flex items-center justify-between shrink-0">
+      <div className="p-4 sm:p-6 border-b border-border bg-black/50 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <Zap className="w-6 h-6 text-brand-lime" />
-          <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">PYTH RACE</h2>
+          <h2 className="text-2xl font-black text-foreground italic tracking-tighter uppercase">PYTH RACE</h2>
           <span className={`text-[9px] font-mono px-2 py-0.5 rounded border flex items-center gap-1 ${connectionStatus === 'connected' ? 'bg-brand-lime/10 border-brand-lime/30 text-brand-lime' :
             connectionStatus === 'simulated' ? 'bg-orange-400/10 border-orange-400/30 text-orange-400' :
               'bg-yellow-400/10 border-yellow-400/30 text-yellow-400 animate-pulse'
@@ -276,7 +276,7 @@ export const PythRace: React.FC = () => {
         </div>
         <div className="flex items-center gap-4">
           {(phase === 'RACING' || phase === 'FINISHED') && (
-            <div className={`px-4 py-1.5 rounded-lg border font-mono font-black text-lg ${timeLeft <= 10 ? 'bg-red-500/20 border-red-500 text-red-500 animate-pulse' : 'bg-white/5 border-white/20 text-white'
+            <div className={`px-4 py-1.5 rounded-lg border font-mono font-black text-lg ${timeLeft <= 10 ? 'bg-red-500/20 border-red-500 text-red-500 animate-pulse' : 'bg-white/5 border-border text-foreground'
               }`}>
               {timeLeft}s
             </div>
@@ -286,14 +286,14 @@ export const PythRace: React.FC = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="px-4 py-1 rounded-full bg-white/10 border border-white/20 text-sm font-mono font-bold text-white animate-pulse"
+              className="px-4 py-1 rounded-full bg-white/10 border border-border text-sm font-mono font-bold text-foreground animate-pulse"
             >
               {globalEvent}
             </motion.div>
           )}
           <button
             onClick={() => setView('HOME')}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-mono text-white transition-colors uppercase tracking-widest"
+            className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-border rounded-lg text-xs font-mono text-foreground transition-colors uppercase tracking-widest"
           >
             <Home className="w-3 h-3" />
             <span className="hidden sm:inline">Exit to Home</span>
@@ -305,21 +305,21 @@ export const PythRace: React.FC = () => {
       <div className="flex-1 overflow-hidden relative flex flex-col">
         {phase === 'INPUT' && (
           <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto">
-            <div className="w-full max-w-xl mx-auto bg-black/40 border border-white/10 rounded-xl backdrop-blur-sm p-6 md:p-8 lg:p-10 pb-6 md:pb-8 flex flex-col gap-6 overflow-hidden">
+            <div className="w-full max-w-xl mx-auto bg-black/40 border border-border rounded-xl backdrop-blur-sm p-6 md:p-8 lg:p-10 pb-6 md:pb-8 flex flex-col gap-6 overflow-hidden">
               <div className="flex flex-col gap-2">
-                <h3 className="text-xl font-bold text-white uppercase tracking-wider">Enter Racers</h3>
-                <p className="text-xs text-zinc-400 font-mono">One name per line (2-50 racers). Each will be assigned a random crypto asset.</p>
+                <h3 className="text-xl font-bold text-foreground uppercase tracking-wider">Enter Racers</h3>
+                <p className="text-xs text-muted font-mono">One name per line (2-50 racers). Each will be assigned a random crypto asset.</p>
               </div>
 
               <textarea
                 value={namesInput}
                 onChange={(e) => setNamesInput(e.target.value)}
-                className="w-full h-48 bg-ink border border-white/20 rounded-lg p-4 text-white font-mono text-sm focus:outline-none focus:border-brand-lime transition-colors resize-none"
+                className="w-full h-48 bg-background border border-border rounded-lg p-4 text-foreground font-mono text-sm focus:outline-none focus:border-brand-lime transition-colors resize-none"
                 placeholder="Alice&#10;Bob&#10;Charlie"
               />
 
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Race Duration</label>
+                <label className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest">Race Duration</label>
                 <div className="grid grid-cols-2 gap-4">
                   {(['30', '60'] as const).map((t) => (
                     <button
@@ -327,7 +327,7 @@ export const PythRace: React.FC = () => {
                       onClick={() => setSelectedDuration(parseInt(t) as 30 | 60)}
                       className={`px-6 py-3 min-h-[44px] rounded border font-mono font-bold transition-all ${selectedDuration === parseInt(t)
                         ? 'bg-brand-lime border-brand-lime text-black'
-                        : 'bg-white/5 border-white/10 text-white/40 hover:border-white/30'
+                        : 'bg-white/5 border-border text-foreground/40 hover:border-white/30'
                         }`}
                     >
                       {t} Seconds
@@ -342,7 +342,7 @@ export const PythRace: React.FC = () => {
                     const names = namesInput.split('\n').filter(n => n.trim().length > 0);
                     setNamesInput(names.sort(() => Math.random() - 0.5).join('\n'));
                   }}
-                  className="w-full md:w-1/3 px-6 py-3 min-h-[44px] bg-white/10 text-white font-black uppercase tracking-widest rounded-lg hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
+                  className="w-full md:w-1/3 px-6 py-3 min-h-[44px] bg-white/10 text-foreground font-black uppercase tracking-widest rounded-lg hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
                 >
                   <RefreshCw className={`w-5 h-5 ${entropyLoading ? 'animate-spin' : ''}`} />
                   Shuffle
@@ -372,7 +372,7 @@ export const PythRace: React.FC = () => {
 
             <div className="relative z-10 flex flex-col gap-2 min-h-full pb-8">
               {racers.map((racer) => (
-                <div key={racer.id} className="relative h-12 sm:h-16 w-full bg-black/20 rounded-r-full border-y border-r border-white/5 flex items-center">
+                <div key={racer.id} className="relative h-12 sm:h-16 w-full bg-black/20 rounded-r-full border-y border-r border-border flex items-center">
 
                   {/* Trail */}
                   <div
@@ -406,7 +406,7 @@ export const PythRace: React.FC = () => {
                       />
 
                       {/* Name Tag & Price */}
-                      <div className="absolute left-full ml-2 whitespace-nowrap bg-black/80 px-2 py-1 rounded text-[10px] sm:text-xs font-mono text-white border border-white/10 flex flex-col">
+                      <div className="absolute left-full ml-2 whitespace-nowrap bg-black/80 px-2 py-1 rounded text-[10px] sm:text-xs font-mono text-foreground border border-border flex flex-col">
                         <span className="font-bold">{racer.name}</span>
                         <span className={racer.priceDelta >= 0 ? 'text-brand-lime' : 'text-red-500'}>
                           ${racer.simulatedPrice < 10 ? racer.simulatedPrice.toFixed(4) : racer.simulatedPrice.toFixed(2)}
@@ -443,20 +443,20 @@ export const PythRace: React.FC = () => {
               <motion.div
                 initial={{ scale: 0.8, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
-                className="bg-ink border border-white/20 p-8 rounded-2xl max-w-md w-full text-center shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+                className="bg-background border border-border p-8 rounded-2xl max-w-md w-full text-center shadow-[0_0_50px_rgba(0,0,0,0.5)]"
                 style={{ boxShadow: `0 0 50px ${winner.color}40` }}
               >
                 <Trophy className="w-16 h-16 mx-auto mb-4" style={{ color: winner.color }} />
-                <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-2">
+                <h2 className="text-3xl font-black text-foreground italic uppercase tracking-tighter mb-2">
                   {winner.name} WINS!
                 </h2>
-                <p className="text-zinc-400 font-mono text-sm mb-8">
+                <p className="text-muted font-mono text-sm mb-8">
                   Riding the <span style={{ color: winner.color }} className="font-bold">{winner.asset}</span> wave to victory.
                 </p>
 
                 <button
                   onClick={handleReplay}
-                  className="w-full py-4 bg-white/10 text-white font-black uppercase tracking-widest rounded-lg hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-white/10 text-foreground font-black uppercase tracking-widest rounded-lg hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
                 >
                   <RefreshCw className="w-5 h-5" />
                   Play Again

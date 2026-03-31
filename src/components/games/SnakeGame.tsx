@@ -102,23 +102,23 @@ export const SnakeGame: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-[#151619] rounded-2xl shadow-2xl border border-white/10 max-w-2xl mx-auto">
+    <div className="flex flex-col items-center justify-center p-8 bg-[#151619] rounded-2xl shadow-2xl border border-border max-w-2xl mx-auto">
       <div className="flex justify-between w-full mb-6">
         <div className="flex flex-col">
-          <span className="text-[10px] uppercase tracking-widest text-white/40 font-mono">Current Score</span>
-          <span className="text-3xl font-mono text-white">{score}</span>
+          <span className="text-[10px] uppercase tracking-widest text-foreground/40 font-mono">Current Score</span>
+          <span className="text-3xl font-mono text-foreground">{score}</span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-[10px] uppercase tracking-widest text-white/40 font-mono">High Score</span>
+          <span className="text-[10px] uppercase tracking-widest text-foreground/40 font-mono">High Score</span>
           <div className="flex items-center gap-2">
             <Trophy size={16} className="text-yellow-500" />
-            <span className="text-3xl font-mono text-white">{highScore}</span>
+            <span className="text-3xl font-mono text-foreground">{highScore}</span>
           </div>
         </div>
       </div>
 
       <div 
-        className="relative bg-black/40 border border-white/5 rounded-lg overflow-hidden"
+        className="relative bg-black/40 border border-border rounded-lg overflow-hidden"
         style={{ 
           width: '400px', 
           height: '400px',
@@ -166,8 +166,8 @@ export const SnakeGame: React.FC = () => {
             >
               {gameOver ? (
                 <>
-                  <h2 className="text-4xl font-display uppercase tracking-tighter text-white mb-2">Game Over</h2>
-                  <p className="text-white/60 mb-6 font-mono text-sm">Final Score: {score}</p>
+                  <h2 className="text-4xl font-display uppercase tracking-tighter text-foreground mb-2">Game Over</h2>
+                  <p className="text-foreground/60 mb-6 font-mono text-sm">Final Score: {score}</p>
                   <button
                     onClick={resetGame}
                     className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-3 px-8 rounded-full transition-all"
@@ -178,7 +178,7 @@ export const SnakeGame: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <h2 className="text-4xl font-display uppercase tracking-tighter text-white mb-6">Paused</h2>
+                  <h2 className="text-4xl font-display uppercase tracking-tighter text-foreground mb-6">Paused</h2>
                   <button
                     onClick={() => setIsPaused(false)}
                     className="flex items-center gap-2 bg-white hover:bg-white/90 text-black font-bold py-3 px-8 rounded-full transition-all"
@@ -194,21 +194,21 @@ export const SnakeGame: React.FC = () => {
       </div>
 
       <div className="mt-8 grid grid-cols-2 gap-4 w-full">
-        <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-          <span className="text-[10px] uppercase tracking-widest text-white/40 font-mono block mb-2">Controls</span>
-          <div className="flex gap-2 items-center text-white/80 text-xs font-mono">
-            <kbd className="px-2 py-1 bg-white/10 rounded border border-white/20">Arrows</kbd>
+        <div className="p-4 bg-white/5 rounded-xl border border-border">
+          <span className="text-[10px] uppercase tracking-widest text-foreground/40 font-mono block mb-2">Controls</span>
+          <div className="flex gap-2 items-center text-foreground/80 text-xs font-mono">
+            <kbd className="px-2 py-1 bg-white/10 rounded border border-border">Arrows</kbd>
             <span>to move</span>
           </div>
-          <div className="flex gap-2 items-center text-white/80 text-xs font-mono mt-2">
-            <kbd className="px-2 py-1 bg-white/10 rounded border border-white/20">Space</kbd>
+          <div className="flex gap-2 items-center text-foreground/80 text-xs font-mono mt-2">
+            <kbd className="px-2 py-1 bg-white/10 rounded border border-border">Space</kbd>
             <span>to pause</span>
           </div>
         </div>
-        <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex flex-col justify-center">
+        <div className="p-4 bg-white/5 rounded-xl border border-border flex flex-col justify-center">
           <button 
             onClick={() => setIsPaused(p => !p)}
-            className="flex items-center justify-center gap-2 text-white/60 hover:text-white transition-colors"
+            className="flex items-center justify-center gap-2 text-foreground/60 hover:text-foreground transition-colors"
           >
             {isPaused ? <Play size={16} /> : <Pause size={16} />}
             <span className="text-xs uppercase tracking-widest font-mono">{isPaused ? 'Resume Game' : 'Pause Game'}</span>

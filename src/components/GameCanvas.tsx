@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store';
-import { socketService } from '../lib/socket';
+
 import { hexToSeeds, mulberry32 } from '../utils/prng';
 import { PYTH_ASSETS, formatPrice } from '../pyth';
 import { useAssets } from '../hooks/useAssets';
@@ -66,10 +66,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ width, height }) => {
   const difficulty = useGameStore(state => state.difficulty);
   const addPrediction = useGameStore(state => state.addPrediction);
   const addSliceAttempt = useGameStore(state => state.addSliceAttempt);
-  const roomId = useGameStore(state => state.roomId);
-  const playerName = useGameStore(state => state.playerName);
-  const remotePlayers = useGameStore(state => state.remotePlayers);
-  const removeRemotePlayer = useGameStore(state => state.removeRemotePlayer);
+
   const currentEntropy = useGameStore(state => state.currentEntropy);
   const { assets: cgAssets } = useAssets();
 
@@ -265,8 +262,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ width, height }) => {
         vx,
         vy,
         color: isSpark ? '#ffffff' : color,
-        life: 1.0,
-        size: (prngRef.current ? prngRef.current() : Math.random()) * 5 + 2,
+        life: 1.5, // Increased from 1.0
+        size: (prngRef.current ? prngRef.current() : Math.random()) * 8 + 3, // Increased from 5+2
       });
     }
   };
@@ -459,7 +456,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ width, height }) => {
       x: p.x + p.vx,
       y: p.y + p.vy,
       vy: p.vy + 0.1, // Gravity
-      life: p.life - 0.02,
+      life: p.life - 0.015,
     })).filter(p => p.life > 0);
 
     particlesRef.current.forEach(p => {
@@ -551,6 +548,26 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ width, height }) => {
     objectsRef.current.forEach(obj => {
       ctx.save();
       ctx.translate(obj.x, obj.y);
+
+      // Cast ambient shadow
+      if (!obj.isHalf) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, obj.radius * 1.5, 0, Math.PI * 2);
+        const isDark = document.documentElement.classList.contains('dark');
+        ctx.fillStyle = isDark ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0)';
+        ctx.shadowBlur = isDark ? 50 : 30;
+        ctx.shadowColor = obj.color;
+        // Draw an invisible shape just to cast the shadow
+        ctx.fill();
+        // Light inner glow
+        const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, obj.radius * 1.8);
+        grad.addColorStop(0, `${obj.color}${isDark ? '20' : '40'}`);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.restore();
+      }
 
       if (obj.isHalf && obj.rotation !== undefined && obj.halfSide) {
         // Draw independent half
@@ -804,9 +821,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ width, height }) => {
       const last = trail[trail.length - 1];
       const isUpward = last.y < first.y;
       
-      // Use blade color from progression level, but maybe tint it slightly based on direction?
-      // Or just use the unlocked blade color entirely.
+      // Use blade color from progression level
       const themeColor = currentLevel.bladeColor;
+      const isDark = document.documentElement.classList.contains('dark');
       
       // 1. Outer Glow Pass (Wide & Soft)
       ctx.beginPath();
@@ -815,23 +832,23 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ width, height }) => {
         ctx.lineTo(trail[i].x, trail[i].y);
       }
       
-      ctx.shadowBlur = 40;
+      ctx.shadowBlur = isDark ? 50 : 20;
       ctx.shadowColor = themeColor;
       ctx.strokeStyle = themeColor;
-      ctx.lineWidth = 16;
+      ctx.lineWidth = 18;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.globalAlpha = 0.2;
+      ctx.globalAlpha = isDark ? 0.3 : 0.4;
       ctx.stroke();
       
       // 2. Inner Glow Pass (Tighter & Brighter)
-      ctx.shadowBlur = 15;
-      ctx.lineWidth = 8;
-      ctx.globalAlpha = 0.5;
+      ctx.shadowBlur = 20;
+      ctx.lineWidth = 10;
+      ctx.globalAlpha = 0.6;
       ctx.stroke();
       
       // 3. Core Pass (Tapering & Color Gradient)
-      ctx.shadowBlur = 0;
+      ctx.shadowBlur = isDark ? 0 : 5;
       ctx.globalAlpha = 1.0;
       
       for (let i = 0; i < trail.length - 1; i++) {
@@ -871,48 +888,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ width, height }) => {
       ctx.restore();
     }
 
-    // Clean up old trail points
+    // Clean up old trail points (increase lifetime from 250ms to 400ms)
     const now = Date.now();
-    trailRef.current = trailRef.current.filter(p => now - p.time < 250);
+    trailRef.current = trailRef.current.filter(p => now - p.time < 400);
 
-    // Sync trail to server if in a room
-    if (roomId) {
-      const socket = socketService.getSocket();
-      if (socket) {
-        socket.emit("player-state", {
-          roomId,
-          state: {
-            playerName,
-            trail: trailRef.current
-          }
-        });
-      }
-    }
-
-    // Draw remote players' trails
-    Object.entries(remotePlayers).forEach(([id, player]) => {
-      const rTrail = player.trail;
-      if (rTrail.length > 1) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(rTrail[0].x, rTrail[0].y);
-        for (let i = 1; i < rTrail.length; i++) {
-          ctx.lineTo(rTrail[i].x, rTrail[i].y);
-        }
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#7c3aed'; // Purple for remote players
-        ctx.strokeStyle = '#7c3aed';
-        ctx.lineWidth = 4;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-
-        // Draw name
-        ctx.fillStyle = 'white';
-        ctx.font = '10px font-mono';
-        ctx.fillText(player.playerName, rTrail[rTrail.length - 1].x, rTrail[rTrail.length - 1].y - 10);
-        ctx.restore();
-      }
-    });
 
     // Red flash on mistake
     if (screenShakeRef.current > 5) {

@@ -23,17 +23,19 @@ export const usePythPolling = (intervalMs = 1000) => {
       return acc;
     }, {} as Record<string, string>);
 
-    const fetchPrices = async () => {
+    setConnectionStatus('reconnecting');
+    const ids = Object.values(FEEDS).map(id => `ids[]=${id}`).join("&");
+    const streamUrl = `https://hermes.pyth.network/v2/updates/price/stream?parsed=true&${ids}`;
+    
+    const eventSource = new EventSource(streamUrl);
+
+    eventSource.onopen = () => {
+      setConnectionStatus('connected');
+    };
+
+    eventSource.onmessage = (event) => {
       try {
-        setConnectionStatus('reconnecting'); // show sync indicator if desired, or skip to keep 'connected'
-        
-        // Fetch several pairs in one request
-        const ids = Object.values(FEEDS).map(id => `ids[]=${id}`).join("&");
-        const res = await fetch(`https://hermes.pyth.network/v2/updates/price/latest?${ids}`);
-        
-        if (!res.ok) throw new Error('Failed to fetch Pyth updates');
-        const data = await res.json();
-        
+        const data = JSON.parse(event.data);
         if (data.parsed && Array.isArray(data.parsed)) {
           data.parsed.forEach((update: any) => {
             const sym = (update.id || '').toLowerCase();
@@ -52,23 +54,21 @@ export const usePythPolling = (intervalMs = 1000) => {
               publishTime: p.publish_time
             });
           });
-          setConnectionStatus('connected');
         }
       } catch (err) {
-        console.error("Pyth Polling Error", err);
-        // We could switch to 'simulated' here if we wanted to build in a fallback inside the hook,
-        // but for now we follow the simple polling architecture.
-        setConnectionStatus('disconnected');
+        console.error("Pyth SSE Parsing Error", err);
       }
     };
 
-    fetchPrices(); // immediate fetch
-    intervalRef.current = setInterval(fetchPrices, intervalMs);
+    eventSource.onerror = (err) => {
+      console.error("Pyth SSE Error", err);
+      setConnectionStatus('disconnected');
+    };
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      eventSource.close();
     };
-  }, [intervalMs, setPrice, setConnectionStatus]);
+  }, [setPrice, setConnectionStatus]);
 };
 
 /**

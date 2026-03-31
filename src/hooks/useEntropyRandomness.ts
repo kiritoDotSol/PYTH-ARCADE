@@ -10,7 +10,7 @@ const ENTROPY_ABI = parseAbi([
   'event RandomnessReady(uint64 sequenceNumber, bytes32 randomValue)'
 ]);
 
-export function useEntropyRandomness(contractAddress: `0x${string}` = '0x1A2B3C4D5E6F78901A2B3C4D5E6F78901A2B3C4D') {
+export function useEntropyRandomness(contractAddress: `0x${string}` = '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace') {
   const { address } = useAccount();
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { TrendingUp, TrendingDown, Play, RotateCcw, Brain, Zap, Activity, Shield, CheckCircle2, XCircle, Trophy } from 'lucide-react';
+import { TrendingUp, TrendingDown, Play, RotateCcw, Brain, Activity, CheckCircle2, XCircle } from 'lucide-react';
 import { useGameStore } from '../../store';
 import confetti from 'canvas-confetti';
 import { usePythPrices, usePythConnection } from '../../hooks/usePythPrices';
@@ -12,8 +12,7 @@ import { hexToSeeds, mulberry32 } from '../../utils/prng';
 
 type Direction = 'UP' | 'DOWN';
 type Strength = 'WEAK' | 'MEDIUM' | 'STRONG';
-type GamePhase = 'START' | 'MODE_SELECT' | 'FLASH' | 'RECALL' | 'RESULT';
-type GameMode = 'TRAINING' | 'CHAOS';
+type GamePhase = 'START' | 'FLASH' | 'RECALL' | 'RESULT';
 
 interface Signal {
   id: string;
@@ -21,7 +20,6 @@ interface Signal {
   direction: Direction;
   strength: Strength;
   color: string;
-  isFake?: boolean;
   livePrice?: string;
 }
 
@@ -38,12 +36,6 @@ const ASSETS = [
   { symbol: 'ATOM', color: '#2E3148' },
 ];
 
-const STRENGTH_VALUES = {
-  WEAK: 1,
-  MEDIUM: 2,
-  STRONG: 3,
-};
-
 export const SignalOverloadTest: React.FC = () => {
   const { setView, addXP, setScore: setGlobalScore } = useGameStore();
   const prices = usePythPrices();
@@ -52,7 +44,6 @@ export const SignalOverloadTest: React.FC = () => {
   const { requestEntropy, loading: entropyLoading } = useEntropyRandomness();
 
   const [phase, setPhase] = useState<GamePhase>('START');
-  const [mode, setMode] = useState<GameMode>('TRAINING');
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
@@ -69,34 +60,13 @@ export const SignalOverloadTest: React.FC = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const generateSignals = useCallback((getRand: () => number) => {
-    const numSignals = mode === 'CHAOS' 
-      ? Math.min(6 + Math.floor(level / 2), 12) 
-      : Math.min(4 + Math.floor(level / 2), 8);
-    
+    const numSignals = Math.min(4 + Math.floor(level / 2), 8);
     let shuffledAssets = [...ASSETS].sort(() => getRand() - 0.5);
     
-    // In Chaos mode, add some "fake" data
-    const fakeSymbols = ['DOGE', 'SHIB', 'PEPE', 'FLOKI', 'BONK', 'MEME', 'SCAM', 'RUG'];
-    const fakeColors = ['#FFD700', '#FFA500', '#FF4500', '#DA70D6', '#32CD32'];
-    
     const finalAssets = [];
-    if (mode === 'CHAOS') {
-      const numFake = Math.floor(numSignals / 3);
-      const realAssets = shuffledAssets.slice(0, numSignals - numFake);
-      const fakeAssets = Array.from({ length: numFake }, (_, i) => ({
-        symbol: fakeSymbols[Math.floor(getRand() * fakeSymbols.length)],
-        color: fakeColors[Math.floor(getRand() * fakeColors.length)],
-        isFake: true
-      }));
-      finalAssets.push(...realAssets, ...fakeAssets);
-    } else {
-      finalAssets.push(...shuffledAssets.slice(0, numSignals));
-    }
-    
-    // Final shuffle of assets
+    finalAssets.push(...shuffledAssets.slice(0, numSignals));
     finalAssets.sort(() => getRand() - 0.5);
     
-    // Determine the target question type
     const targetType = getRand() > 0.5 ? 'BULLISH' : 'BEARISH';
     const targetDirection = targetType === 'BULLISH' ? 'UP' : 'DOWN';
     const oppositeDirection = targetDirection === 'UP' ? 'DOWN' : 'UP';
@@ -107,8 +77,7 @@ export const SignalOverloadTest: React.FC = () => {
       let direction: Direction = 'UP';
       let strength: Strength = 'WEAK';
 
-      // If we have real Pyth data, use it to seed signal properties
-      if (pythData && !((asset as any).isFake)) {
+      if (pythData) {
         direction = pythData.delta >= 0 ? 'UP' : 'DOWN';
         const deltaPct = pythData.price > 0 ? Math.abs(pythData.delta / pythData.price) * 100 : 0;
         if (deltaPct >= 0.05) strength = 'STRONG';
@@ -122,7 +91,6 @@ export const SignalOverloadTest: React.FC = () => {
         color: asset.color,
         direction,
         strength,
-        isFake: (asset as any).isFake || false,
         livePrice: pythData ? formatPrice(pythData.price) : '---'
       };
     });
@@ -142,10 +110,9 @@ export const SignalOverloadTest: React.FC = () => {
     generatedSignals[redHerringIndex].direction = oppositeDirection;
     generatedSignals[redHerringIndex].strength = 'STRONG';
 
-    // 4. Fill the rest with random distractors (supplemented by real data above)
+    // 4. Fill the rest with random distractors
     for (let i = 3; i < generatedSignals.length; i++) {
       const sig = generatedSignals[i];
-      // If we didn't get data from Pyth, fall back to randomized
       const pythData = prices[sig.symbol];
       if (!pythData) {
         const isTargetDir = getRand() > 0.4;
@@ -192,10 +159,9 @@ export const SignalOverloadTest: React.FC = () => {
     
     setOptions(selectedOptions.sort(() => getRand() - 0.5));
 
-  }, [level, mode, prices]);
+  }, [level, prices]);
 
-  const startGame = (selectedMode: GameMode) => {
-    setMode(selectedMode);
+  const startGame = () => {
     setScore(0);
     setCombo(0);
     setLevel(1);
@@ -214,21 +180,21 @@ export const SignalOverloadTest: React.FC = () => {
   // Flash Phase Loop
   useEffect(() => {
     if (phase === 'FLASH') {
-      const baseTime = mode === 'CHAOS' ? 400 : 1000;
-      const displayTime = Math.max(mode === 'CHAOS' ? 150 : 400, baseTime - level * (mode === 'CHAOS' ? 40 : 80));
+      const baseTime = 1000;
+      const displayTime = Math.max(400, baseTime - level * 80);
       
       const timer = setTimeout(() => {
         if (currentSignalIndex < signals.length - 1) {
           setCurrentSignalIndex(prev => prev + 1);
         } else {
           setPhase('RECALL');
-          const baseRecallTime = mode === 'CHAOS' ? 3 : 8;
-          setTimeLeft(Math.max(mode === 'CHAOS' ? 1.5 : 3, baseRecallTime - Math.floor(level / 2)));
+          const baseRecallTime = 8;
+          setTimeLeft(Math.max(3, baseRecallTime - Math.floor(level / 2)));
         }
       }, displayTime);
       return () => clearTimeout(timer);
     }
-  }, [phase, currentSignalIndex, signals.length, level, mode]);
+  }, [phase, currentSignalIndex, signals.length, level]);
 
   // Recall Phase Timer
   useEffect(() => {
@@ -291,21 +257,9 @@ export const SignalOverloadTest: React.FC = () => {
     startLevel();
   };
 
-  const getStrengthAnimation = (strength: Strength, direction: Direction, isFake?: boolean) => {
+  const getStrengthAnimation = (strength: Strength, direction: Direction) => {
     const baseColor = direction === 'UP' ? 'text-brand-lime' : 'text-rose-500';
     const glowColor = direction === 'UP' ? 'rgba(190,242,100,0.8)' : 'rgba(244,63,94,0.8)';
-    
-    const chaosJitter = mode === 'CHAOS' ? {
-      x: [0, -5, 5, -5, 0],
-      rotate: [0, -2, 2, -2, 0],
-      opacity: [1, 0.8, 1, 0.9, 1]
-    } : {};
-
-    const chaosTransition = mode === 'CHAOS' ? {
-      duration: 0.1,
-      repeat: Infinity,
-      ease: "linear"
-    } : {};
     
     switch (strength) {
       case 'STRONG':
@@ -313,30 +267,27 @@ export const SignalOverloadTest: React.FC = () => {
           className: baseColor,
           animate: { 
             scale: [1.5, 2.0, 1.5], 
-            filter: [`drop-shadow(0 0 30px ${glowColor})`, `drop-shadow(0 0 80px ${glowColor})`, `drop-shadow(0 0 30px ${glowColor})`],
-            ...chaosJitter
+            filter: [`drop-shadow(0 0 30px ${glowColor})`, `drop-shadow(0 0 80px ${glowColor})`, `drop-shadow(0 0 30px ${glowColor})`]
           },
-          transition: { duration: 0.3, repeat: Infinity, ease: "easeInOut", ...chaosTransition }
+          transition: { duration: 0.3, repeat: Infinity, ease: "easeInOut" }
         };
       case 'MEDIUM':
         return {
           className: baseColor,
           animate: { 
             scale: [1.1, 1.3, 1.1], 
-            filter: [`drop-shadow(0 0 15px ${glowColor})`, `drop-shadow(0 0 35px ${glowColor})`, `drop-shadow(0 0 15px ${glowColor})`],
-            ...chaosJitter
+            filter: [`drop-shadow(0 0 15px ${glowColor})`, `drop-shadow(0 0 35px ${glowColor})`, `drop-shadow(0 0 15px ${glowColor})`]
           },
-          transition: { duration: 0.5, repeat: Infinity, ease: "easeInOut", ...chaosTransition }
+          transition: { duration: 0.5, repeat: Infinity, ease: "easeInOut" }
         };
       case 'WEAK':
         return {
           className: `${baseColor} opacity-70`,
           animate: { 
             scale: [0.8, 0.9, 0.8], 
-            filter: [`drop-shadow(0 0 5px ${glowColor})`, `drop-shadow(0 0 10px ${glowColor})`, `drop-shadow(0 0 5px ${glowColor})`],
-            ...chaosJitter
+            filter: [`drop-shadow(0 0 5px ${glowColor})`, `drop-shadow(0 0 10px ${glowColor})`, `drop-shadow(0 0 5px ${glowColor})`]
           },
-          transition: { duration: 0.7, repeat: Infinity, ease: "easeInOut", ...chaosTransition }
+          transition: { duration: 0.7, repeat: Infinity, ease: "easeInOut" }
         };
     }
   };
@@ -344,17 +295,17 @@ export const SignalOverloadTest: React.FC = () => {
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col gap-8">
       {/* Game Header */}
-      <div className="flex justify-between items-center bg-ink/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl">
+      <div className="flex justify-between items-center bg-background/60 backdrop-blur-xl border border-border p-4 rounded-2xl">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-brand-purple/20 flex items-center justify-center text-brand-purple border border-brand-purple/30">
             <Activity size={24} />
           </div>
           <div>
-            <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">Signal Overload</h2>
+            <h2 className="text-xl font-black text-foreground italic uppercase tracking-tighter">Signal Overload</h2>
             <div className="flex gap-2 items-center">
-              <div className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Level {level}</div>
-              <div className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${mode === 'CHAOS' ? 'bg-rose-500/10 border-rose-500/30 text-rose-500' : 'bg-brand-lime/10 border-brand-lime/30 text-brand-lime'} uppercase tracking-widest`}>
-                {mode}
+              <div className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest">Level {level}</div>
+              <div className="text-[10px] font-mono px-1.5 py-0.5 rounded border bg-brand-lime/10 border-brand-lime/30 text-brand-lime uppercase tracking-widest">
+                TRAINING
               </div>
               <div className={`text-[10px] font-mono px-1.5 py-0.5 rounded border flex items-center gap-1 ${
                 connectionStatus === 'connected' ? 'bg-brand-lime/10 border-brand-lime/30 text-brand-lime' :
@@ -372,11 +323,11 @@ export const SignalOverloadTest: React.FC = () => {
         </div>
         <div className="flex items-center gap-8">
           <div className="flex flex-col items-end">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Score</span>
+            <span className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest">Score</span>
             <span className="text-2xl font-black text-brand-lime tracking-tighter">{Math.floor(score)}</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Combo</span>
+            <span className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest">Combo</span>
             <motion.span 
               key={combo}
               initial={{ scale: 1.5, color: '#bef264' }}
@@ -390,7 +341,7 @@ export const SignalOverloadTest: React.FC = () => {
       </div>
 
       {/* Main Game Area */}
-      <div className="bg-ink/60 backdrop-blur-2xl border border-white/10 rounded-[32px] overflow-hidden shadow-2xl relative min-h-[500px] flex flex-col items-center justify-center p-8">
+      <div className="bg-background/60 backdrop-blur-2xl border border-border rounded-[32px] overflow-hidden shadow-2xl relative min-h-[500px] flex flex-col items-center justify-center p-8">
         
         {/* Flash Overlay */}
         <AnimatePresence>
@@ -423,92 +374,26 @@ export const SignalOverloadTest: React.FC = () => {
               <div className="w-24 h-24 rounded-full bg-brand-purple/10 border border-brand-purple/30 flex items-center justify-center mb-8">
                 <Brain className="w-12 h-12 text-brand-purple animate-pulse" />
               </div>
-              <h1 className="text-4xl font-black text-white uppercase italic tracking-tighter mb-4">Signal Overload Test</h1>
-              <p className="text-white/60 text-sm leading-relaxed mb-10 font-mono uppercase tracking-tight">
+              <h1 className="text-4xl font-black text-foreground uppercase italic tracking-tighter mb-4">Signal Overload Test</h1>
+              <p className="text-foreground/60 text-sm leading-relaxed mb-10 font-mono uppercase tracking-tight">
                 Process rapid market signals. Identify the strongest bullish or bearish moves under extreme time pressure.
               </p>
               <div className="flex gap-4">
                 <button
-                  onClick={() => setPhase('MODE_SELECT')}
-                  className="px-10 py-4 bg-brand-lime text-black font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all rounded-xl flex items-center gap-3 shadow-[0_0_30px_rgba(190,242,100,0.3)]"
+                  onClick={() => startGame()}
+                  disabled={entropyLoading}
+                  className="px-10 py-4 bg-brand-lime text-black font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all rounded-xl flex items-center gap-3 shadow-[0_0_30px_rgba(190,242,100,0.3)] disabled:opacity-50"
                 >
                   <Play className="w-5 h-5 fill-current" />
-                  Enter Simulation
+                  {entropyLoading ? 'Decrypting...' : 'Enter Simulation'}
                 </button>
                 <button
                   onClick={() => setView('HOME')}
-                  className="px-8 py-4 bg-white/5 border border-white/10 text-white/60 font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all rounded-xl"
+                  className="px-8 py-4 bg-white/5 border border-border text-foreground/60 font-black uppercase tracking-widest hover:bg-white/10 hover:text-foreground transition-all rounded-xl"
                 >
                   Back
                 </button>
               </div>
-            </motion.div>
-          )}
-
-          {phase === 'MODE_SELECT' && (
-            <motion.div
-              key="mode-select"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              className="text-center relative z-10 flex flex-col items-center w-full max-w-2xl"
-            >
-              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter mb-12">Select Operation Mode</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                <button
-                  onClick={() => startGame('TRAINING')}
-                  disabled={entropyLoading}
-                  className="group p-8 bg-ink/40 border border-white/10 rounded-3xl hover:border-brand-lime/50 transition-all text-left flex flex-col gap-4 relative overflow-hidden disabled:opacity-50"
-                >
-                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Brain size={80} />
-                  </div>
-                  <div className="w-12 h-12 rounded-xl bg-brand-lime/20 flex items-center justify-center text-brand-lime border border-brand-lime/30">
-                    <Brain size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Training Mode</h3>
-                    <p className="text-white/40 text-xs font-mono uppercase mt-2 leading-relaxed">
-                      Slower flash speeds. Clear signals. Perfect for building foundational pattern recognition.
-                    </p>
-                  </div>
-                  <div className="mt-4 flex items-center gap-2 text-brand-lime font-black uppercase tracking-widest text-[10px]">
-                    <span>Select Training</span>
-                    <Play size={10} className="fill-current" />
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => startGame('CHAOS')}
-                  disabled={entropyLoading}
-                  className="group p-8 bg-ink/40 border border-white/10 rounded-3xl hover:border-rose-500/50 transition-all text-left flex flex-col gap-4 relative overflow-hidden disabled:opacity-50"
-                >
-                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Zap size={80} />
-                  </div>
-                  <div className="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-500 border border-rose-500/30">
-                    <Zap size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Chaos Mode</h3>
-                    <p className="text-white/40 text-xs font-mono uppercase mt-2 leading-relaxed">
-                      Extreme speeds. Unstable visuals. Fake data distractors. Test your limits in market noise.
-                    </p>
-                  </div>
-                  <div className="mt-4 flex items-center gap-2 text-rose-500 font-black uppercase tracking-widest text-[10px]">
-                    <span>Select Chaos</span>
-                    <Zap size={10} className="fill-current" />
-                  </div>
-                </button>
-              </div>
-
-              <button
-                onClick={() => setPhase('START')}
-                className="mt-12 text-white/40 hover:text-white font-mono uppercase text-[10px] tracking-widest transition-colors"
-              >
-                Go Back
-              </button>
             </motion.div>
           )}
 
@@ -520,33 +405,24 @@ export const SignalOverloadTest: React.FC = () => {
                 opacity: 1, 
                 scale: 1, 
                 filter: 'blur(0px)',
-                x: mode === 'CHAOS' ? [0, -10, 10, -10, 0] : 0,
-                y: mode === 'CHAOS' ? [0, 5, -5, 5, 0] : 0
+                x: 0,
+                y: 0
               }}
               exit={{ opacity: 0, scale: 1.5, filter: 'blur(20px)' }}
               transition={{ 
-                duration: mode === 'CHAOS' ? 0.15 : 0.25, 
-                ease: "easeOut",
-                x: { duration: 0.1, repeat: mode === 'CHAOS' ? Infinity : 0 },
-                y: { duration: 0.1, repeat: mode === 'CHAOS' ? Infinity : 0 }
+                duration: 0.25, 
+                ease: "easeOut"
               }}
               className="relative z-10 flex flex-col items-center justify-center"
             >
-              <div className="text-[10px] font-mono text-white/40 uppercase tracking-[0.5em] mb-8">
+              <div className="text-[10px] font-mono text-foreground/40 uppercase tracking-[0.5em] mb-8">
                 Signal {currentSignalIndex + 1} / {signals.length}
               </div>
               
               <div className="flex flex-col items-center gap-8">
                 <motion.div 
                   initial={{ y: 20, opacity: 0 }}
-                  animate={{ 
-                    y: 0, 
-                    opacity: 1,
-                    skewX: mode === 'CHAOS' ? [-5, 5, -5] : 0
-                  }}
-                  transition={{
-                    skewX: { duration: 0.1, repeat: Infinity }
-                  }}
+                  animate={{ y: 0, opacity: 1, skewX: 0 }}
                   className="flex items-center gap-4 text-7xl font-black italic tracking-tighter"
                   style={{ color: signals[currentSignalIndex].color, textShadow: `0 0 60px ${signals[currentSignalIndex].color}80, 0 0 20px ${signals[currentSignalIndex].color}` }}
                 >
@@ -559,28 +435,17 @@ export const SignalOverloadTest: React.FC = () => {
                 </motion.div>
                 {signals[currentSignalIndex].livePrice !== '---' && (
                   <span className="text-3xl opacity-80 block mt-2 tracking-widest font-mono text-center" style={{ color: signals[currentSignalIndex].color }}>
-                    @ ${signals[currentSignalIndex].livePrice}
+                    ${signals[currentSignalIndex].livePrice}
                   </span>
                 )}
                 
-                <motion.div {...getStrengthAnimation(signals[currentSignalIndex].strength, signals[currentSignalIndex].direction, signals[currentSignalIndex].isFake)}>
+                <motion.div {...getStrengthAnimation(signals[currentSignalIndex].strength, signals[currentSignalIndex].direction)}>
                   {signals[currentSignalIndex].direction === 'UP' ? (
                     <TrendingUp size={100} strokeWidth={3} />
                   ) : (
                     <TrendingDown size={100} strokeWidth={3} />
                   )}
                 </motion.div>
-
-                {signals[currentSignalIndex].isFake && mode === 'CHAOS' && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ duration: 0.2, repeat: Infinity }}
-                    className="absolute -top-4 -right-4 bg-rose-500 text-white text-[8px] font-bold px-1 rounded"
-                  >
-                    UNSTABLE
-                  </motion.div>
-                )}
               </div>
             </motion.div>
           )}
@@ -601,15 +466,15 @@ export const SignalOverloadTest: React.FC = () => {
                       stroke="#bef264"
                       strokeWidth="4"
                       strokeDasharray="125.6"
-                      strokeDashoffset={125.6 * (1 - timeLeft / (mode === 'CHAOS' ? Math.max(1.5, 3 - Math.floor(level / 2)) : Math.max(3, 8 - Math.floor(level / 2))))}
+                      strokeDashoffset={125.6 * (1 - timeLeft / Math.max(3, 8 - Math.floor(level / 2)))}
                       className="transition-all duration-1000 linear"
                     />
                   </svg>
-                  <span className="text-xl font-black text-white">{timeLeft}</span>
+                  <span className="text-xl font-black text-foreground">{timeLeft}</span>
                 </div>
               </div>
 
-              <h3 className="text-2xl sm:text-3xl font-black text-white uppercase italic tracking-tighter mb-12 text-center">
+              <h3 className="text-2xl sm:text-3xl font-black text-foreground uppercase italic tracking-tighter mb-12 text-center">
                 {question.text}
               </h3>
 
@@ -623,7 +488,7 @@ export const SignalOverloadTest: React.FC = () => {
                     whileTap={{ scale: 0.95 }}
                     transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300 }}
                     onClick={() => handleAnswer(option)}
-                    className="p-6 bg-ink/80 border border-white/10 rounded-2xl flex flex-col items-center gap-3 transition-colors group relative overflow-hidden"
+                    className="p-6 bg-background/80 border border-border rounded-2xl flex flex-col items-center gap-3 transition-colors group relative overflow-hidden"
                   >
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300" style={{ backgroundColor: option.color }} />
                     <div 
@@ -672,21 +537,21 @@ export const SignalOverloadTest: React.FC = () => {
                     <XCircle className="w-12 h-12 text-rose-500" />
                   </motion.div>
                   <h3 className="text-4xl font-black text-rose-500 uppercase italic tracking-tighter mb-2">Signal Lost</h3>
-                  <p className="text-white/60 font-mono uppercase tracking-widest mb-8">
+                  <p className="text-foreground/60 font-mono uppercase tracking-widest mb-8">
                     {selectedAnswer === null ? 'Timeout' : `Correct answer was ${correctAnswer?.symbol}`}
                   </p>
                   
                   <div className="flex gap-4">
                     <button
-                      onClick={() => startGame(mode)}
-                      className="px-10 py-4 bg-brand-purple text-white font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all rounded-xl flex items-center gap-2"
+                      onClick={() => startGame()}
+                      className="px-10 py-4 bg-brand-purple text-foreground font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all rounded-xl flex items-center gap-2"
                     >
                       <RotateCcw size={18} />
                       Restart
                     </button>
                     <button
                       onClick={() => setView('HOME')}
-                      className="px-8 py-4 bg-white/5 border border-white/10 text-white/60 font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all rounded-xl"
+                      className="px-8 py-4 bg-white/5 border border-border text-foreground/60 font-black uppercase tracking-widest hover:bg-white/10 hover:text-foreground transition-all rounded-xl"
                     >
                       Exit
                     </button>
@@ -706,8 +571,7 @@ export const SignalOverloadTest: React.FC = () => {
         instructions={[
           "Watch the lightning-fast flashes of Pyth Assets.",
           "Note the asset, direction (UP/DOWN), and live price.",
-          "Identify the STRONGEST signal shown in the sequence.",
-          "In chaos mode, beware of unstable fake signals!"
+          "Identify the STRONGEST signal shown in the sequence."
         ]}
         accentColor="#7c3aed"
       />

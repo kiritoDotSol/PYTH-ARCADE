@@ -26,8 +26,8 @@ export const Showcase: React.FC<ShowcaseProps> = ({ game, onPlay }) => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="mb-4"
         >
-          <span className="text-[11px] uppercase tracking-[0.2em] font-mono text-white/50 mb-4 block">Featured Game</span>
-          <h1 className="text-[15vw] font-display uppercase leading-[0.85] tracking-tighter text-white mb-8">
+          <span className="text-[11px] uppercase tracking-[0.2em] font-mono text-foreground/50 mb-4 block">Featured Game</span>
+          <h1 className="text-[15vw] font-display uppercase leading-[0.85] tracking-tighter text-foreground mb-8">
             {game.title}
           </h1>
         </motion.div>
@@ -38,7 +38,7 @@ export const Showcase: React.FC<ShowcaseProps> = ({ game, onPlay }) => {
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="max-w-2xl"
         >
-          <p className="text-xl text-white/60 mb-12 font-sans leading-relaxed">
+          <p className="text-xl text-foreground/60 mb-12 font-sans leading-relaxed">
             {game.description}
           </p>
 
@@ -57,7 +57,7 @@ export const Showcase: React.FC<ShowcaseProps> = ({ game, onPlay }) => {
 
       {/* Decorative vertical text */}
       <div className="absolute left-8 bottom-8 hidden lg:block">
-        <span className="writing-mode-vertical-rl rotate-180 text-[10px] uppercase tracking-[0.5em] text-white/20 font-mono">
+        <span className="writing-mode-vertical-rl rotate-180 text-[10px] uppercase tracking-[0.5em] text-foreground/20 font-mono">
           GAME NEXUS // SHOWCASE // 2026
         </span>
       </div>

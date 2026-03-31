@@ -23,7 +23,7 @@ export const GameInstructions: React.FC<GameInstructionsProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-ink/80 backdrop-blur-md pointer-events-auto"
+            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-md pointer-events-auto"
             onClick={onClose}
           />
           
@@ -33,7 +33,7 @@ export const GameInstructions: React.FC<GameInstructionsProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="fixed z-[101] max-w-lg w-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-                     bg-ink/90 border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden pointer-events-auto"
+                     bg-background/90 border border-border rounded-3xl p-8 shadow-2xl overflow-hidden pointer-events-auto"
           >
             <div 
               className="absolute top-0 left-0 w-full h-1"
@@ -47,22 +47,22 @@ export const GameInstructions: React.FC<GameInstructionsProps> = ({
               >
                 <Info size={24} />
               </div>
-              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+              <h2 className="text-3xl font-black text-foreground italic uppercase tracking-tighter">
                 {title}
               </h2>
             </div>
             
-            <p className="text-white/60 text-sm mb-8 font-mono tracking-tight leading-relaxed">
+            <p className="text-foreground/60 text-sm mb-8 font-mono tracking-tight leading-relaxed">
               {description}
             </p>
             
             <div className="space-y-4 mb-8">
               {instructions.map((inst, idx) => (
                 <div key={idx} className="flex gap-4 items-start">
-                  <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-[10px] font-bold text-white/60 font-mono tracking-widest">{idx + 1}</span>
+                  <div className="w-6 h-6 rounded-full bg-white/5 border border-border flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-foreground/60 font-mono tracking-widest">{idx + 1}</span>
                   </div>
-                  <p className="text-sm text-white/80 font-mono leading-relaxed uppercase tracking-tight">
+                  <p className="text-sm text-foreground/80 font-mono leading-relaxed uppercase tracking-tight">
                     {inst}
                   </p>
                 </div>

@@ -12,7 +12,7 @@ export const LeaderboardPanel: React.FC = () => {
       <div className="lg:hidden mb-4">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full bg-ink/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-between text-white hover:bg-white/5 transition-all"
+          className="w-full bg-background/40 backdrop-blur-xl border border-border rounded-2xl p-4 flex items-center justify-between text-foreground hover:bg-white/5 transition-all"
         >
           <div className="flex items-center gap-3">
             <Trophy className="w-5 h-5 text-brand-purple" />

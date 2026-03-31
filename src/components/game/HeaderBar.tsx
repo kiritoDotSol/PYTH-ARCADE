@@ -18,13 +18,13 @@ export const HeaderBar: React.FC = () => {
   const rankColor = getRankColor(rank);
 
   return (
-    <div className="w-full border-b border-white/10 bg-ink/80 backdrop-blur-md z-50 shrink-0">
+    <div className="w-full border-b border-border bg-background/80 backdrop-blur-md z-50 shrink-0">
       <div className="max-w-7xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between gap-4">
         {/* Left: Player Stats */}
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-[9px] sm:text-[10px] font-mono text-white/40 uppercase tracking-widest truncate max-w-[80px] sm:max-w-[120px]">
+              <span className="text-[9px] sm:text-[10px] font-mono text-foreground/40 uppercase tracking-widest truncate max-w-[80px] sm:max-w-[120px]">
                 {playerName || 'AGENT'}
               </span>
               <div className="w-1 h-1 rounded-full bg-brand-lime animate-pulse shrink-0" />
@@ -37,8 +37,8 @@ export const HeaderBar: React.FC = () => {
             </span>
           </div>
 
-          <div className="hidden lg:flex flex-col border-l border-white/10 pl-4">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest flex items-center gap-1">
+          <div className="hidden lg:flex flex-col border-l border-border pl-4">
+            <span className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest flex items-center gap-1">
               <Star className="w-3 h-3 text-brand-purple" /> Lvl {getCurrentLevel(xp).level}
             </span>
             <div className="flex items-center gap-2 mt-0.5">
@@ -50,7 +50,7 @@ export const HeaderBar: React.FC = () => {
                   }} 
                 />
               </div>
-              <span className="text-[10px] font-mono text-white/60">{xp} XP</span>
+              <span className="text-[10px] font-mono text-foreground/60">{xp} XP</span>
             </div>
           </div>
 
@@ -71,9 +71,9 @@ export const HeaderBar: React.FC = () => {
         <div className="flex flex-col items-center shrink-0">
           <div className="hidden sm:flex items-center gap-2 mb-0.5">
             <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Market Open</span>
+            <span className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest">Market Open</span>
           </div>
-          <span className={`text-2xl sm:text-3xl font-mono font-bold tabular-nums tracking-tighter ${timeLeft < 10 ? 'text-rose-500' : 'text-white'}`}>
+          <span className={`text-2xl sm:text-3xl font-mono font-bold tabular-nums tracking-tighter ${timeLeft < 10 ? 'text-rose-500' : 'text-foreground'}`}>
             {timeLeft.toString().padStart(2, '0')}:00
           </span>
         </div>
@@ -81,7 +81,7 @@ export const HeaderBar: React.FC = () => {
         {/* Right: Risk & High Score */}
         <div className="flex items-center gap-4 sm:gap-6 shrink-0">
           <div className="flex flex-col items-end">
-            <span className="text-[9px] sm:text-[10px] font-mono text-white/40 uppercase tracking-widest">Risk</span>
+            <span className="text-[9px] sm:text-[10px] font-mono text-foreground/40 uppercase tracking-widest">Risk</span>
             <div className="flex gap-1 mt-1">
               {[...Array(3)].map((_, i) => (
                 <div 
@@ -92,9 +92,9 @@ export const HeaderBar: React.FC = () => {
             </div>
           </div>
 
-          <div className="hidden sm:flex flex-col items-end border-l border-white/10 pl-4 sm:pl-6">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Best</span>
-            <span className="text-xs sm:text-sm font-mono text-white/60">${highScore.toLocaleString()}</span>
+          <div className="hidden sm:flex flex-col items-end border-l border-border pl-4 sm:pl-6">
+            <span className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest">Best</span>
+            <span className="text-xs sm:text-sm font-mono text-foreground/60">${highScore.toLocaleString()}</span>
           </div>
         </div>
       </div>

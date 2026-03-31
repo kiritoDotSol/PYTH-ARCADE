@@ -31,7 +31,7 @@ export const GameGrid: React.FC<GameGridProps> = ({ games, onPlay }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               onClick={() => onPlay(game)}
-              className="group relative bg-[#E4E3E0] p-12 cursor-pointer transition-colors hover:bg-black hover:text-white"
+              className="group relative bg-[#E4E3E0] p-12 cursor-pointer transition-colors hover:bg-black hover:text-foreground"
             >
               <div className="flex justify-between items-start mb-12">
                 <span className="text-[11px] uppercase tracking-[0.2em] font-mono opacity-40 group-hover:opacity-60">

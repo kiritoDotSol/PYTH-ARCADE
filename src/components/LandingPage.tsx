@@ -9,12 +9,12 @@ interface LandingPageProps {
 const FUTURE_GAMES = [
   { id: 'neon-slice', name: 'NEON SLICE', status: 'COMING SOON', icon: <Zap className="w-4 h-4" />, color: 'text-brand-lime' },
   { id: 'cyber-cut', name: 'CYBER CUT', status: 'DEVELOPMENT', icon: <Cpu className="w-4 h-4" />, color: 'text-brand-purple' },
-  { id: 'void-shred', name: 'VOID SHRED', status: 'LOCKED', icon: <Lock className="w-4 h-4" />, color: 'text-white/20' },
+  { id: 'void-shred', name: 'VOID SHRED', status: 'LOCKED', icon: <Lock className="w-4 h-4" />, color: 'text-foreground/20' },
 ];
 
 export function LandingPage({ onStartGame }: LandingPageProps) {
   return (
-    <div className="relative w-full h-full flex flex-col overflow-y-auto overflow-x-hidden bg-ink">
+    <div className="relative w-full h-full flex flex-col overflow-y-auto overflow-x-hidden bg-background">
       {/* Hero Section */}
       <section className="relative min-h-[70vh] flex flex-col items-center justify-center px-6 pt-20 pb-12">
         <motion.div 
@@ -27,16 +27,16 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
             <div className="px-2 py-0.5 bg-brand-lime text-ink text-[10px] font-mono font-bold tracking-widest rounded-sm uppercase">
               LIVE NOW
             </div>
-            <div className="text-[10px] font-mono text-white/40 tracking-widest uppercase italic">
+            <div className="text-[10px] font-mono text-foreground/40 tracking-widest uppercase italic">
               V2.5.0 STABLE
             </div>
           </div>
           
-          <h1 className="text-[15vw] sm:text-[12vw] font-black leading-[0.85] tracking-tighter uppercase italic text-white mb-8 select-none">
+          <h1 className="text-[15vw] sm:text-[12vw] font-black leading-[0.85] tracking-tighter uppercase italic text-foreground mb-8 select-none">
             PLICE <span className="text-brand-purple">IT</span>
           </h1>
           
-          <p className="max-w-md mx-auto text-sm sm:text-base text-white/60 font-sans leading-relaxed mb-10">
+          <p className="max-w-md mx-auto text-sm sm:text-base text-foreground/60 font-sans leading-relaxed mb-10">
             The ultimate precision slicing challenge powered by Pyth real-time data. 
             Test your reflexes in the digital void.
           </p>
@@ -63,12 +63,12 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
 
       {/* Games List Section */}
       <section className="relative z-10 px-6 pb-20 max-w-5xl mx-auto w-full">
-        <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+        <div className="flex items-center justify-between mb-8 border-b border-border pb-4">
           <div className="flex items-center gap-3">
             <Gamepad2 className="w-5 h-5 text-brand-lime" />
             <h2 className="text-xs font-mono font-bold tracking-[0.3em] uppercase italic">GAME DIRECTORY</h2>
           </div>
-          <div className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
+          <div className="text-[10px] font-mono text-foreground/30 uppercase tracking-widest">
             3 NEW ENTRIES PENDING
           </div>
         </div>
@@ -80,26 +80,26 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             onClick={onStartGame}
-            className="group relative flex items-center justify-between p-6 bg-white/5 border border-white/10 hover:border-brand-lime cursor-pointer transition-all hover:bg-white/10"
+            className="group relative flex items-center justify-between p-6 bg-white/5 border border-border hover:border-brand-lime cursor-pointer transition-all hover:bg-white/10"
           >
             <div className="flex items-center gap-6">
               <div className="w-12 h-12 flex items-center justify-center bg-brand-lime/10 border border-brand-lime/20 rounded-full">
                 <Trophy className="w-6 h-6 text-brand-lime" />
               </div>
               <div>
-                <h3 className="text-xl font-black italic tracking-tight text-white group-hover:text-brand-lime transition-colors">PLICE IT</h3>
+                <h3 className="text-xl font-black italic tracking-tight text-foreground group-hover:text-brand-lime transition-colors">PLICE IT</h3>
                 <div className="flex items-center gap-3 mt-1">
                   <span className="text-[10px] font-mono text-brand-lime uppercase tracking-widest">ACTIVE SESSION</span>
-                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">• HIGH PRECISION</span>
+                  <span className="text-[10px] font-mono text-foreground/30 uppercase tracking-widest">• HIGH PRECISION</span>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="hidden sm:block text-right">
-                <div className="text-[10px] font-mono text-white/40 uppercase tracking-widest">CURRENT RANK</div>
-                <div className="text-sm font-mono font-bold text-white">#001 GLOBAL</div>
+                <div className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest">CURRENT RANK</div>
+                <div className="text-sm font-mono font-bold text-foreground">#001 GLOBAL</div>
               </div>
-              <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-brand-lime transition-colors" />
+              <ChevronRight className="w-5 h-5 text-foreground/20 group-hover:text-brand-lime transition-colors" />
             </div>
           </motion.div>
 
@@ -111,21 +111,21 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="relative flex items-center justify-between p-6 bg-white/[0.02] border border-white/5 grayscale opacity-50"
+              className="relative flex items-center justify-between p-6 bg-white/[0.02] border border-border grayscale opacity-50"
             >
               <div className="flex items-center gap-6">
-                <div className="w-12 h-12 flex items-center justify-center bg-white/5 border border-white/10 rounded-full">
+                <div className="w-12 h-12 flex items-center justify-center bg-white/5 border border-border rounded-full">
                   {game.icon}
                 </div>
                 <div>
-                  <h3 className="text-xl font-black italic tracking-tight text-white/40">{game.name}</h3>
+                  <h3 className="text-xl font-black italic tracking-tight text-foreground/40">{game.name}</h3>
                   <div className="flex items-center gap-3 mt-1">
                     <span className={`text-[10px] font-mono ${game.color} uppercase tracking-widest`}>{game.status}</span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <Lock className="w-4 h-4 text-white/10" />
+                <Lock className="w-4 h-4 text-foreground/10" />
               </div>
             </motion.div>
           ))}
