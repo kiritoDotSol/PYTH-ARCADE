@@ -2,6 +2,7 @@
 
 **Pyth Arcade** is a gamified, real-time financial platform that transforms the high-stakes, split-second decision-making of day trading into deeply engaging, arcade-style mini-games. It is built to showcase the extreme speed, precision, and low latency of **Pyth Network**'s data solutions.
 
+You can check it out from here : https://pyth-arcade.vercel.app/
 ---
 
 ## 🌟 The Vision
