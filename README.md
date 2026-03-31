@@ -55,7 +55,6 @@ Pyth Arcade is carefully engineered using a modern Web3 stack optimized for zero
 
 ### Backend Engine
 *   **Server:** Node.js, Express (via `tsx`)
-*   **Real-time Updates:** Socket.IO for multiplayer sync and continuous gamestate broadcasting
 
 ---
 
