@@ -63,24 +63,5 @@ Pyth Arcade leans heavily into a **Cyber-Brutalist Trading Terminal** aesthetic.
 
 ---
 
-## 🚀 Getting Started
-
-Want to spin up the arcade locally? 
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Start the development environment:**
-   The `dev` script concurrently spins up the React frontend and the Express/Socket backend.
-   ```bash
-   npm run dev
-   ```
-
-3. **Play:** Navigate to the Localhost URL provided by Vite (usually `http://localhost:5173`) and insert your virtual coin.
-
----
-
 ## 📜 License
 MIT
